@@ -1,5 +1,5 @@
 {
-  "name": "@metamask/snap-kms-signer",
+  "name": "@adisakboonmark/snap-kms-signer",
   "version": "1.0.0",
   "description": "Snap KMS Signer is a feature that allows users to sign Ethereum transactions using an external key management service (KMS) provider.",
   "keywords": [

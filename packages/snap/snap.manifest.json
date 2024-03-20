@@ -7,12 +7,12 @@
     "url": "git+https://github.com/ADISAKBOONMARK/snap-kms.git"
   },
   "source": {
-    "shasum": "CgGEZCpG3e2C1D6OUWwzUua8z32ZBzRRbss2/d9pwOA=",
+    "shasum": "9SQLs79D3WEbtwZ4SYSY8NzpL2ZvX4fM5zlxZkk7BqM=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "@metamask/snap-kms-signer",
+        "packageName": "@adisakboonmark/snap-kms-signer",
         "registry": "https://registry.npmjs.org/"
       }
     }
@@ -20,7 +20,8 @@
   "initialPermissions": {
     "endowment:keyring": {
       "allowedOrigins": [
-        "http://localhost:8000"
+        "https://adisakboonmark.github.io",
+        "https://github.io"
       ]
     },
     "endowment:rpc": {

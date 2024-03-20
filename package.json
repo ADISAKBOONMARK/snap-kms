@@ -25,8 +25,8 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach --parallel --verbose --topological run build",
-    "build:dapp": "yarn workspace @metamask/snap-kms-signer-site build",
-    "build:snap": "yarn workspace @metamask/snap-kms-signer build",
+    "build:dapp": "yarn workspace @adisakboonmark/snap-kms-signer-site build",
+    "build:snap": "yarn workspace @adisakboonmark/snap-kms-signer build",
     "lint": "yarn workspaces foreach --parallel --verbose run lint",
     "lint:deps": "yarn workspaces foreach --parallel --verbose run depcheck",
     "lint:eslint": "yarn workspaces foreach --parallel --verbose run lint:eslint",
