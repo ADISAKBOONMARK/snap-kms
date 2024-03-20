@@ -1,5 +1,5 @@
 # Use the official Node.js image as the base image
-FROM node:20-alpine
+FROM node:18-alpine
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -20,6 +20,7 @@ COPY ./server.js ./server.js
 COPY ./tsconfig.json ./tsconfig.json
 
 COPY ./package.json ./package.json
+COPY ./yarn.lock ./yarn.lock
 
 # Fix arm64 timeouts
 # RUN yarn config set network-timeout 300000 && yarn global add node-gyp
