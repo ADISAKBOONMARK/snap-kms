@@ -1,7 +1,7 @@
 version: '3'
 services: 
   snap-kms-signer:
-    image: snap-kms-signer@latest
+    image: snap-kms-signer
     container_name: snap-kms-signer 
     volumes:
       - ./container_files/snap/snap.manifest.json:/snap/snap.manifest.json
@@ -9,7 +9,7 @@ services:
       - "8080:8080"
 
   snap-kms-signer-site:
-    image: snap-kms-signer-site@latest
+    image: snap-kms-signer-site
     container_name: snap-kms-signer-site
     volumes:
       - ./container_files/site/.env.production:/app/.env.production
