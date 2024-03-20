@@ -7,7 +7,7 @@
     "url": "git+https://github.com/ADISAKBOONMARK/snap-kms.git"
   },
   "source": {
-    "shasum": "qhS/fvgH25m4SV4Iui8DviaO4KTMuAOn3F2LRCMXwmA=",
+    "shasum": "CgGEZCpG3e2C1D6OUWwzUua8z32ZBzRRbss2/d9pwOA=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
