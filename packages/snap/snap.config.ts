@@ -8,9 +8,10 @@ const config: SnapConfig = {
     buffer: true,
     stream: true,
     crypto: true,
+    assert: true,
   },
   environment: {
-    DAPP_ORIGIN_PRODUCTION: 'https://metamask.github.io/snap-simple-keyring/',
+    DAPP_ORIGIN_PRODUCTION: 'https://github.com/ADISAKBOONMARK/snap-kms/',
     DAPP_ORIGIN_DEVELOPMENT: 'http://localhost:8000/',
   },
   stats: {
