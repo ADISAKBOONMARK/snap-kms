@@ -14,6 +14,7 @@ import {
   AccountRowTitle,
   AccountRowValue,
 } from './styledComponents';
+import { confirmAlert } from 'react-confirm-alert';
 
 export const Account = ({
   account,
@@ -22,12 +23,12 @@ export const Account = ({
   account: KeyringAccount;
   handleDelete: (accountId: string) => Promise<void>;
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <AccountContainer>
       <AccountTitleContainer>
-        <AccountTitle>{account.address}</AccountTitle>
+        <AccountTitle>{`${account.address.toLowerCase().slice(0, 7)}...${account.address.toLowerCase().slice(-5)}`}</AccountTitle>
         <AccountTitleIconContainer>
           {isCollapsed ? (
             <ExpandMoreIcon
@@ -44,10 +45,6 @@ export const Account = ({
       </AccountTitleContainer>
       {!isCollapsed && (
         <>
-          <AccountRow>
-            <AccountRowTitle>ID</AccountRowTitle>
-            <CopyableItem value={account.id} />
-          </AccountRow>
           <AccountRow>
             <AccountRowTitle>Address</AccountRowTitle>
             <CopyableItem value={account.address} />
@@ -70,8 +67,22 @@ export const Account = ({
             <MethodButton
               width="30%"
               margin="8px 0px 8px 8px"
-              onClick={async (): Promise<void> => {
-                await handleDelete(account.id);
+              onClick={async () => {
+                confirmAlert({
+                  title: 'Delete',
+                  message: 'Are you sure to delete the account?',
+                  buttons: [
+                    {
+                      label: 'No',
+                    },
+                    {
+                      label: 'Yes',
+                      onClick: async () => {
+                        await handleDelete(account.id);
+                      },
+                    },
+                  ],
+                });
               }}
               label="Delete"
             />
