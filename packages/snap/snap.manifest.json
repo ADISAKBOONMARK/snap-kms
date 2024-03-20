@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-beta",
+  "version": "0.1.1-beta",
   "description": "Snap KMS Signer is a feature that allows users to sign Ethereum transactions using an external key management service (KMS) provider.",
   "proposedName": "Snap KMS Signer",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "git+https://github.com/ADISAKBOONMARK/snap-kms.git"
   },
   "source": {
-    "shasum": "NsNdpCMSkJ0gEtUy/adtw8Fy3RY2XFruQLbtsH9Gw6U=",
+    "shasum": "745+hNlE99fpXkMMKgNL2sKTWXCTJ4rc4YXITrvsU5s=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -24,7 +24,8 @@
       ]
     },
     "endowment:rpc": {
-      "dapps": true
+      "dapps": true,
+      "snaps": true
     },
     "endowment:network-access": {},
     "snap_manageAccounts": {},
