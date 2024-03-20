@@ -17,6 +17,7 @@ import {
   DividerTitle,
   StyledBox,
 } from '../components/styledComponents';
+
 import { defaultSnapOrigin } from '../config';
 import { MetaMaskContext, MetamaskActions } from '../hooks';
 import { InputType } from '../types';
@@ -26,7 +27,9 @@ import {
   getSnap,
   isSynchronousMode,
   toggleSynchronousApprovals,
+  stringToHex,
 } from '../utils';
+import PendingRequests from '../components/PendingRequests';
 
 const snapId = defaultSnapOrigin;
 
@@ -40,9 +43,39 @@ const initialState: {
   useSynchronousApprovals: true,
 };
 
+const listOfAwsRegions = [
+  { value: 'ap-southeast-1' },
+  { value: 'ap-southeast-2' },
+  { value: 'ap-east-1' },
+  { value: 'ap-northeast-1' },
+  { value: 'ap-northeast-2' },
+  { value: 'ap-northeast-3' },
+  { value: 'ap-south-1' },
+  { value: 'ca-central-1' },
+  { value: 'cn-north-1' },
+  { value: 'cn-northwest-1' },
+  { value: 'eu-central-1' },
+  { value: 'eu-north-1' },
+  { value: 'eu-south-1' },
+  { value: 'eu-west-1' },
+  { value: 'eu-west-2' },
+  { value: 'eu-west-3' },
+  { value: 'me-south-1' },
+  { value: 'sa-east-1' },
+  { value: 'us-east-1' },
+  { value: 'us-east-2' },
+  { value: 'us-west-1' },
+  { value: 'us-west-2' }
+];
+
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
   const [snapState, setSnapState] = useState<KeyringState>(initialState);
+  // The AWS credentials.
+  const [kmsKey, setKmsKey] = useState<string | null>();
+  const [awsRegion, setAwsRegion] = useState<string | null>();
+  const [awsAccessKey, setAwsAccessKey] = useState<string | null>();
+  const [awsSecretAccessKey, setAwsSecretAccessKey] = useState<string | null>();
   // Is not a good practice to store sensitive data in the state of
   // a component but for this case it should be ok since this is an
   // internal development and testing tool.
@@ -67,11 +100,15 @@ const Index = () => {
       const accounts = await client.listAccounts();
       const pendingRequests = await client.listRequests();
       const isSynchronous = await isSynchronousMode();
+
       setSnapState({
         accounts,
         pendingRequests,
         useSynchronousApprovals: isSynchronous,
       });
+
+      // Set default Aws Region 
+      setAwsRegion("ap-southeast-1")
     }
 
     getState().catch((error) => console.error(error));
@@ -85,32 +122,17 @@ const Index = () => {
     });
   };
 
-  const createAccount = async () => {
-    const newAccount = await client.createAccount();
-    await syncAccounts();
-    return newAccount;
-  };
-
   const importAccount = async () => {
+    const pk = stringToHex(
+      kmsKey + '|' + awsRegion + '|' + awsAccessKey + '|' + awsSecretAccessKey,
+    );
+
     const newAccount = await client.createAccount({
-      privateKey: privateKey as string,
+      privateKey: pk as string,
     });
     await syncAccounts();
+
     return newAccount;
-  };
-
-  const deleteAccount = async () => {
-    await client.deleteAccount(accountId as string);
-    await syncAccounts();
-  };
-
-  const updateAccount = async () => {
-    if (!accountObject) {
-      return;
-    }
-    const account: KeyringAccount = JSON.parse(accountObject);
-    await client.updateAccount(account);
-    await syncAccounts();
   };
 
   const handleConnectClick = async () => {
@@ -139,27 +161,42 @@ const Index = () => {
 
   const accountManagementMethods = [
     {
-      name: 'Create account',
-      description: 'Create a new account',
-      inputs: [],
-      action: {
-        callback: async () => await createAccount(),
-        label: 'Create Account',
-      },
-      successMessage: 'Account created',
-    },
-    {
       name: 'Import account',
-      description: 'Import an account using a private key',
+      description: 'Import an account using a KMS key and AWS credentials.',
       inputs: [
         {
-          id: 'import-account-private-key',
-          title: 'Private key',
-          value: privateKey,
+          id: 'import-account-kms-key',
+          title: 'KMS Key',
+          value: kmsKey,
           type: InputType.TextField,
-          placeholder:
-            'E.g. 0000000000000000000000000000000000000000000000000000000000000000',
-          onChange: (event: any) => setPrivateKey(event.currentTarget.value),
+          placeholder: 'E.g. 69411b4c-7be2-4dc5-8017-86f9a76f8e34',
+          onChange: (event: any) => setKmsKey(event.currentTarget.value),
+        },
+        {
+          id: 'import-account-aws-region',
+          title: 'AWS Region',
+          value: awsRegion,
+          type: InputType.Dropdown,
+          options: listOfAwsRegions,
+          placeholder: 'E.g. ap-southeast-1',
+          onChange: (event: any) => setAwsRegion(event.currentTarget.value),
+        },
+        {
+          id: 'import-account-aws-access-key',
+          title: 'AWS Access Key',
+          value: awsAccessKey,
+          type: InputType.TextField,
+          placeholder: 'E.g. ABCDEFGHIJKLNMOPQRST',
+          onChange: (event: any) => setAwsAccessKey(event.currentTarget.value),
+        },
+        {
+          id: 'import-account-aws-secret-access-key',
+          title: 'AWS Secret Access Key',
+          value: awsSecretAccessKey,
+          type: InputType.TextField,
+          placeholder: 'E.g. abcdefghijklnmopqrstuvwxyz12345678910112',
+          onChange: (event: any) =>
+            setAwsSecretAccessKey(event.currentTarget.value),
         },
       ],
       action: {
@@ -168,222 +205,67 @@ const Index = () => {
       },
       successMessage: 'Account imported',
     },
-    {
-      name: 'Get account',
-      description: 'Get data of the selected account',
-      inputs: [
-        {
-          id: 'get-account-account-id',
-          title: 'Account ID',
-          type: InputType.TextField,
-          placeholder: 'E.g. f59a9562-96de-4e75-9229-079e82c7822a',
-          options: snapState.accounts.map((account) => {
-            return { value: account.address };
-          }),
-          onChange: (event: any) => setAccountId(event.currentTarget.value),
-        },
-      ],
-      action: {
-        disabled: Boolean(accountId),
-        callback: async () => await client.getAccount(accountId as string),
-        label: 'Get Account',
-      },
-      successMessage: 'Account fetched',
-    },
-    {
-      name: 'List accounts',
-      description: 'List all account managed by the SSK',
-      action: {
-        disabled: false,
-        callback: async () => {
-          const accounts = await client.listAccounts();
-          setSnapState({
-            ...snapState,
-            accounts,
-          });
-          return accounts;
-        },
-        label: 'List Accounts',
-      },
-    },
-    {
-      name: 'Remove account',
-      description: 'Remove an account',
-      inputs: [
-        {
-          id: 'delete-account-account-id',
-          title: 'Account ID',
-          type: InputType.TextField,
-          placeholder: 'E.g. 394bd587-7be4-4ffb-a113-198c6a7764c2',
-          options: snapState.accounts.map((account) => {
-            return { value: account.address };
-          }),
-          onChange: (event: any) => setAccountId(event.currentTarget.value),
-        },
-      ],
-      action: {
-        disabled: Boolean(accountId),
-        callback: async () => await deleteAccount(),
-        label: 'Remove Account',
-      },
-      successMessage: 'Account Removed',
-    },
-    {
-      name: 'Update account',
-      description: 'Update an account',
-      inputs: [
-        {
-          id: 'update-account-account-object',
-          title: 'Account Object',
-          type: InputType.TextArea,
-          placeholder: 'E.g. { id: ... }',
-          onChange: (event: any) => setAccountObject(event.currentTarget.value),
-        },
-      ],
-      action: {
-        disabled: Boolean(accountId),
-        callback: async () => await updateAccount(),
-        label: 'Update Account',
-      },
-      successMessage: 'Account Updated',
-    },
-  ];
-
-  const requestMethods = [
-    {
-      name: 'Get request',
-      description: 'Get a pending request by ID',
-      inputs: [
-        {
-          id: 'get-request-request-id',
-          title: 'Request ID',
-          type: InputType.TextField,
-          placeholder: 'E.g. e5156958-16ad-4d5d-9dcd-6a8ba1d34906',
-          onChange: (event: any) => setRequestId(event.currentTarget.value),
-        },
-      ],
-      action: {
-        enabled: Boolean(requestId),
-        callback: async () => await client.getRequest(requestId as string),
-        label: 'Get Request',
-      },
-    },
-    {
-      name: 'List requests',
-      description: 'List pending requests',
-      action: {
-        disabled: false,
-        callback: async () => {
-          const requests = await client.listRequests();
-          setSnapState({
-            ...snapState,
-            pendingRequests: requests,
-          });
-          return requests;
-        },
-        label: 'List Requests',
-      },
-    },
-    {
-      name: 'Approve request',
-      description: 'Approve a pending request by ID',
-      inputs: [
-        {
-          id: 'approve-request-request-id',
-          title: 'Request ID',
-          type: InputType.TextField,
-          placeholder: 'E.g. 6fcbe1b5-f250-452c-8114-683dfa5ea74d',
-          onChange: (event: any) => {
-            setRequestId(event.currentTarget.value);
-          },
-        },
-      ],
-      action: {
-        disabled: !requestId,
-        callback: async () => await client.approveRequest(requestId as string),
-        label: 'Approve Request',
-      },
-      successMessage: 'Request approved',
-    },
-    {
-      name: 'Reject request',
-      description: 'Reject a pending request by ID',
-      inputs: [
-        {
-          id: 'reject-request-request-id',
-          title: 'Request ID',
-          type: InputType.TextField,
-          placeholder: 'E.g. 424ad2ee-56cf-493e-af82-cee79c591117',
-          onChange: (event: any) => {
-            setRequestId(event.currentTarget.value);
-          },
-        },
-      ],
-      action: {
-        disabled: !requestId,
-        callback: async () => await client.rejectRequest(requestId as string),
-        label: 'Reject Request',
-      },
-      successMessage: 'Request Rejected',
-    },
   ];
 
   return (
     <Container>
-      <CardContainer>
-        {!state.installedSnap && (
+      {!state.installedSnap ? (
+        <CardContainer>
           <Card
             content={{
-              title: 'Connect',
+              title: '🔐 Snap KMS Signer',
               description:
-                'Get started by connecting to and installing the example snap.',
+                'Snap KMS Signer is a feature that allows users to sign Ethereum transactions using an external key management service (KMS) provider.',
               button: (
                 <ConnectButton
                   onClick={handleConnectClick}
                   disabled={!state.hasMetaMask}
+                  style={{
+                    width: '100%',
+                  }}
                 />
               ),
             }}
             disabled={!state.hasMetaMask}
           />
-        )}
-      </CardContainer>
-
-      <StyledBox sx={{ flexGrow: 1 }}>
-        <Grid container spacing={4} columns={[1, 2, 3]}>
-          <Grid item xs={8} sm={4} md={2}>
-            <DividerTitle>Options</DividerTitle>
-            <Toggle
-              title="Use Synchronous Approval"
-              defaultChecked={snapState.useSynchronousApprovals}
-              onToggle={handleUseSyncToggle}
-              enabled={Boolean(state.installedSnap)}
-            />
-            <Divider>&nbsp;</Divider>
-            <DividerTitle>Methods</DividerTitle>
-            <Accordion items={accountManagementMethods} />
-            <Divider />
-            <DividerTitle>Request Methods</DividerTitle>
-            <Accordion items={requestMethods} />
-            <Divider />
+        </CardContainer>
+      ) : (
+        <StyledBox sx={{ flexGrow: 1 }}>
+          <Grid container={true} spacing={4} columns={[1, 2, 3]}>
+            <Grid item xs={3} sm={3} md={1}>
+              <DividerTitle>Accounts</DividerTitle>
+              <AccountList
+                accounts={snapState.accounts}
+                handleDelete={async (accountIdToDelete) => {
+                  await client.deleteAccount(accountIdToDelete);
+                  const accounts = await client.listAccounts();
+                  setSnapState({
+                    ...snapState,
+                    accounts,
+                  });
+                }}
+              />
+              <Accordion items={accountManagementMethods} />
+              <Divider />
+            </Grid>
+            <Grid item xs={3} sm={3} md={2}>
+              <DividerTitle>Request Methods</DividerTitle>
+              <Toggle
+                title="Synchronous Approval"
+                defaultChecked={snapState.useSynchronousApprovals}
+                onToggle={handleUseSyncToggle}
+                enabled={Boolean(state.installedSnap)}
+              />
+              <PendingRequests
+                items={snapState.pendingRequests}
+                client={client}
+              />
+              <Divider />
+              <Divider />
+            </Grid>
           </Grid>
-          <Grid item xs={4} sm={2} md={1}>
-            <Divider />
-            <DividerTitle>Accounts</DividerTitle>
-            <AccountList
-              accounts={snapState.accounts}
-              handleDelete={async (accountIdToDelete) => {
-                await client.deleteAccount(accountIdToDelete);
-                const accounts = await client.listAccounts();
-                setSnapState({
-                  ...snapState,
-                  accounts,
-                });
-              }}
-            />
-          </Grid>
-        </Grid>
-      </StyledBox>
+        </StyledBox>
+      )}
     </Container>
   );
 };
