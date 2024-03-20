@@ -1,6 +1,6 @@
 {
   "name": "@adisakboonmark/snap-kms-signer-site",
-  "version": "1.0.0",
+  "version": "0.1.4-beta",
   "private": true,
   "license": "MIT",
   "scripts": {

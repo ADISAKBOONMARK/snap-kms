@@ -212,7 +212,9 @@ export class SimpleKeyring implements Keyring {
   ): Promise<SubmitRequestResponse> {
     this.#state.pendingRequests[request.id] = request;
     await this.#saveState();
-    const dappUrl = this.#getCurrentUrl();
+    let dappUrl = this.#getCurrentUrl();
+    const dappVersion: string = packageInfo.version;
+    dappUrl = dappUrl.replace(`${dappVersion}/`, '');
     return {
       pending: true,
       redirect: {
