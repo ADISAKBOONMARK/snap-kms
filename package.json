@@ -1,31 +1,32 @@
 {
-  "name": "@metamask/snap-simple-keyring",
-  "version": "1.1.1",
+  "name": "@metamask/snap-kms",
+  "version": "1.0.0",
   "private": true,
-  "description": "A simple keyring snap that integrates with MetaMask accounts.",
+  "description": "Snap KMS Signer is a feature that allows users to sign Ethereum transactions using an external key management service (KMS) provider.",
   "keywords": [
     "metamask",
     "snap",
     "keyring",
-    "account"
+    "account",
+    "kms"
   ],
-  "homepage": "https://github.com/MetaMask/snap-simple-keyring#readme",
+  "homepage": "https://github.com/ADISAKBOONMARK/snap-kms#readme",
   "bugs": {
-    "url": "https://github.com/MetaMask/snap-simple-keyring/issues"
+    "url": "https://github.com/ADISAKBOONMARK/snap-kms/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/snap-simple-keyring.git"
+    "url": "git+https://github.com/ADISAKBOONMARK/snap-kms.git"
   },
-  "license": "(MIT-0 OR Apache-2.0)",
+  "license": "MIT",
   "author": "",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "build": "yarn workspaces foreach --parallel --verbose --topological run build",
-    "build:dapp": "yarn workspace @metamask/snap-simple-keyring-site build",
-    "build:snap": "yarn workspace @metamask/snap-simple-keyring-snap build",
+    "build:dapp": "yarn workspace @metamask/snap-kms-signer-site build",
+    "build:snap": "yarn workspace @metamask/snap-kms-signer build",
     "lint": "yarn workspaces foreach --parallel --verbose run lint",
     "lint:deps": "yarn workspaces foreach --parallel --verbose run depcheck",
     "lint:eslint": "yarn workspaces foreach --parallel --verbose run lint:eslint",
