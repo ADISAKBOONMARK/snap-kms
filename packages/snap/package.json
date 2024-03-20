@@ -35,7 +35,8 @@
     "lint:misc": "prettier '**/*.json' '**/*.md' '!CHANGELOG.md' '!snap.manifest.json' --check",
     "lint:types": "tsc --noEmit",
     "serve": "mm-snap serve",
-    "start": "NODE_ENV='development' mm-snap watch"
+    "start": "NODE_ENV='development' mm-snap watch",
+    "static-serve": "yarn build && yarn serve"
   },
   "dependencies": {
     "@aws-sdk/client-kms": "^3.535.0",
