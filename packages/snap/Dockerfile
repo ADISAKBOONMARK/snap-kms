@@ -2,22 +2,16 @@
 FROM node:20-alpine
 
 # Set the working directory inside the container
-WORKDIR /app
+WORKDIR /snap
 
 # Copy all files from the current directory to the working directory
-COPY ./fonts ./fonts
-COPY ./src ./src
-COPY ./static ./static
 COPY ./.depcheckrc.json ./.depcheckrc.json
-COPY ./.env.production ./.env.production
-COPY ./.eslintrc.js ./.eslintrc.js
-COPY ./.prettierignore ./.prettierignore
-COPY ./gatsby-browser.tsx ./gatsby-browser.tsx
-COPY ./gatsby-config.ts ./gatsby-config.ts
-COPY ./gatsby-node.js ./gatsby-node.js
-COPY ./gatsby-ssr.tsx ./gatsby-ssr.tsx
-COPY ./server.js ./server.js
-COPY ./tsconfig.json ./tsconfig.json
+COPY ./.eslintrc.js ./.eslintrc.js     
+COPY ./images ./images                                     
+COPY ./snap.config.ts ./snap.config.ts
+COPY ./snap.manifest.json ./snap.manifest.json
+COPY ./src ./src
+COPY ./tsconfig.json ./tsconfig.json 
 
 COPY ./package.json ./package.json
 
@@ -27,8 +21,8 @@ COPY ./package.json ./package.json
 # Install dependencies
 RUN yarn install
 
-# Expose port 3000
-EXPOSE 3000
+# Expose port 8080
+EXPOSE 8080
 
 # Start the Express server
 CMD ["yarn", "static-serve"]
