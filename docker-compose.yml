@@ -1,0 +1,17 @@
+version: '3'
+services: 
+  snap-kms-signer:
+    image: snap-kms-signer@latest
+    container_name: snap-kms-signer 
+    volumes:
+      - ./container_files/snap/snap.manifest.json:/snap/snap.manifest.json
+    ports:
+      - "8080:8080"
+
+  snap-kms-signer-site:
+    image: snap-kms-signer-site@latest
+    container_name: snap-kms-signer-site
+    volumes:
+      - ./container_files/site/.env.production:/app/.env.production
+    ports:
+      - "3000:3000"
