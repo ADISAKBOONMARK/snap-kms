@@ -11,7 +11,7 @@ const config: SnapConfig = {
     assert: true,
   },
   environment: {
-    DAPP_ORIGIN_PRODUCTION: 'https://github.com/ADISAKBOONMARK/snap-kms/',
+    DAPP_ORIGIN_PRODUCTION: 'https://adisakboonmark.github.io/snap-kms-signer-site/',
     DAPP_ORIGIN_DEVELOPMENT: 'http://localhost:8000/',
   },
   stats: {

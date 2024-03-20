@@ -7,7 +7,7 @@
     "url": "git+https://github.com/ADISAKBOONMARK/snap-kms.git"
   },
   "source": {
-    "shasum": "9SQLs79D3WEbtwZ4SYSY8NzpL2ZvX4fM5zlxZkk7BqM=",
+    "shasum": "NsNdpCMSkJ0gEtUy/adtw8Fy3RY2XFruQLbtsH9Gw6U=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -20,8 +20,7 @@
   "initialPermissions": {
     "endowment:keyring": {
       "allowedOrigins": [
-        "https://adisakboonmark.github.io",
-        "https://github.io"
+        "https://adisakboonmark.github.io"
       ]
     },
     "endowment:rpc": {
