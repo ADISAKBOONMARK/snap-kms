@@ -89,7 +89,7 @@ export const AccountTitle = styled.p`
   margin: 0px;
   color: #000;
   font-family: Euclid Circular B, ui-sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: 24px; /* 150% */

@@ -23,8 +23,16 @@ const StyledSelect = styled.select`
   width: calc(95% - 16px);
   padding-top: 8px;
   padding-bottom: 10px;
+  padding-left: 10px;
   margin: 8px 2.5% 8px 16px;
   border-radius: 5px;
+  -moz-appearance:none; 
+  -webkit-appearance:none;
+  appearance:none;
+  background-image: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KCjwhLS0gTGljZW5zZTogTUlULiBNYWRlIGJ5IEgyRDIgRGVzaWduOiBodHRwczovL2dpdGh1Yi5jb20vaDJkMi1kZXNpZ24vaDJkMi1zaG9waWNvbnMgLS0+Cjxzdmcgd2lkdGg9IjI0cHgiIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAwIDQ4IDQ4IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciID4KCjxwYXRoIGQ9Ik0wIDBoNDh2NDhIMHoiIGZpbGw9Im5vbmUiLz4KPGcgaWQ9IlNob3BpY29uIj4KCTxnPgoJCTxwb2x5Z29uIHBvaW50cz0iMjQsMjkuMTcxIDkuNDE0LDE0LjU4NSA2LjU4NiwxNy40MTMgMjQsMzQuODI3IDQxLjQxNCwxNy40MTMgMzguNTg2LDE0LjU4NSAJCSIvPgoJPC9nPgo8L2c+Cjwvc3ZnPg==");
+  background-size: 16px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 8px) center;
 `;
 
 const StyledSelectItem = styled.option`
@@ -127,7 +135,7 @@ export const Method = ({
 
   return (
     <Grid
-      container
+      container={true}
       direction="column"
       spacing={4}
       style={{

@@ -15,7 +15,6 @@ const AccordionItem = styled.div`
   border-radius: 4px;
   margin-bottom: 20px;
   padding: 8px;
-  width: 100%;
 `;
 
 const AccordionHeader = styled.div`

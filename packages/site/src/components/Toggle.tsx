@@ -69,8 +69,8 @@ const UncheckedContainer = styled(IconContainer)<CheckedProps>`
 `;
 
 const ToggleContainer = styled.div<CheckedProps>`
-  width: 68px;
-  height: 36px;
+  width: 50px;
+  height: 30px;
   padding: 0;
   border-radius: 36px;
   background-color: ${({ checked, enabled }) => {
@@ -87,9 +87,9 @@ const ToggleCircle = styled.div<CheckedProps>`
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1) 0ms;
   position: absolute;
   top: 4px;
-  left: ${({ checked }) => (checked ? '36px' : '4px')};
-  width: 28px;
-  height: 28px;
+  left: ${({ checked }) => (checked ? '24px' : '4px')};
+  width: 22px;
+  height: 22px;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.14);
   border-radius: 50%;
   background-color: ${({ enabled }) => (enabled ? '#ffffff' : '#eee')};
@@ -135,7 +135,7 @@ export const Toggle = ({
   };
 
   return (
-    <div>
+    <div style={{ marginBottom: '10px' }}>
       <ToggleWrapper
         onClick={() => {
           handleChange().catch(console.error);
