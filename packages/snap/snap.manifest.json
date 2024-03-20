@@ -1,18 +1,18 @@
 {
-  "version": "1.1.1",
-  "description": "An example of a key management snap for a simple keyring.",
-  "proposedName": "MetaMask Simple Snap Keyring",
+  "version": "1.0.0",
+  "description": "Snap KMS Signer is a feature that allows users to sign Ethereum transactions using an external key management service (KMS) provider.",
+  "proposedName": "Snap KMS Signer",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MetaMask/snap-simple-keyring.git"
+    "url": "git+https://github.com/ADISAKBOONMARK/snap-kms.git"
   },
   "source": {
-    "shasum": "kTIqxcFUYPRiaV7etXM0HpD+fSaJw/+ePbFgjXW3Btk=",
+    "shasum": "NsNdpCMSkJ0gEtUy/adtw8Fy3RY2XFruQLbtsH9Gw6U=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "@metamask/snap-simple-keyring-snap",
+        "packageName": "@adisakboonmark/snap-kms-signer",
         "registry": "https://registry.npmjs.org/"
       }
     }
@@ -20,12 +20,13 @@
   "initialPermissions": {
     "endowment:keyring": {
       "allowedOrigins": [
-        "https://metamask.github.io"
+        "https://adisakboonmark.github.io"
       ]
     },
     "endowment:rpc": {
       "dapps": true
     },
+    "endowment:network-access": {},
     "snap_manageAccounts": {},
     "snap_manageState": {}
   },

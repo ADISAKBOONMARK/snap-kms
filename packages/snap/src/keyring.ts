@@ -1,21 +1,11 @@
-import { Common, Hardfork } from '@ethereumjs/common';
-import { TransactionFactory } from '@ethereumjs/tx';
-import {
-  Address,
-  ecsign,
-  stripHexPrefix,
-  toBuffer,
-  toChecksumAddress,
-  isValidPrivate,
-  addHexPrefix,
-} from '@ethereumjs/util';
-import type { TypedDataV1, TypedMessage } from '@metamask/eth-sig-util';
+import type {
+  TypedDataV1Field,
+  TypedMessage,
+  MessageTypes,
+} from '@metamask/eth-sig-util';
 import {
   SignTypedDataVersion,
-  concatSig,
-  personalSign,
   recoverPersonalSignature,
-  signTypedData,
 } from '@metamask/eth-sig-util';
 import type {
   Keyring,
@@ -36,10 +26,9 @@ import { v4 as uuid } from 'uuid';
 import { saveState } from './stateManagement';
 import {
   isEvmChain,
-  serializeTransaction,
   isUniqueAddress,
   throwError,
-  runSensitive,
+  privateKeyToKMSSigner,
 } from './util';
 import packageInfo from '../package.json';
 
@@ -52,6 +41,13 @@ export type KeyringState = {
 export type Wallet = {
   account: KeyringAccount;
   privateKey: string;
+};
+
+export type AWSCredentials = {
+  kmsKey: string;
+  awsRegion: string;
+  awsAccessKey: string;
+  awsSecretAccessKey: string;
 };
 
 export class SimpleKeyring implements Keyring {
@@ -75,7 +71,7 @@ export class SimpleKeyring implements Keyring {
   async createAccount(
     options: Record<string, Json> = {},
   ): Promise<KeyringAccount> {
-    const { privateKey, address } = this.#getKeyPair(
+    const { privateKey, address } = await this.#getKeyPair(
       options?.privateKey as string | undefined,
     );
 
@@ -173,7 +169,7 @@ export class SimpleKeyring implements Keyring {
       this.#state.pendingRequests[id] ??
       throwError(`Request '${id}' not found`);
 
-    const result = this.#handleSigningRequest(
+    const result = await this.#handleSigningRequest(
       request.method,
       request.params ?? [],
     );
@@ -221,7 +217,7 @@ export class SimpleKeyring implements Keyring {
       pending: true,
       redirect: {
         url: dappUrl,
-        message: 'Redirecting to Snap Simple Keyring to sign transaction',
+        message: 'Redirecting to Snap KMS Signer to sign transaction',
       },
     };
   }
@@ -230,7 +226,7 @@ export class SimpleKeyring implements Keyring {
     request: KeyringRequest,
   ): Promise<SubmitRequestResponse> {
     const { method, params = [] } = request.request as JsonRpcRequest;
-    const signature = this.#handleSigningRequest(method, params);
+    const signature = await this.#handleSigningRequest(method, params);
     return {
       pending: false,
       result: signature,
@@ -246,64 +242,52 @@ export class SimpleKeyring implements Keyring {
     return match ?? throwError(`Account '${address}' not found`);
   }
 
-  #getKeyPair(privateKey?: string): {
+  async #getKeyPair(privateKey?: string): Promise<{
     privateKey: string;
     address: string;
-  } {
-    const privateKeyBuffer: Buffer = runSensitive(
-      () =>
-        privateKey
-          ? toBuffer(addHexPrefix(privateKey))
-          : Buffer.from(crypto.getRandomValues(new Uint8Array(32))),
-      'Invalid private key',
-    );
-
-    if (!isValidPrivate(privateKeyBuffer)) {
-      throw new Error('Invalid private key');
-    }
-
-    const address = toChecksumAddress(
-      Address.fromPrivateKey(privateKeyBuffer).toString(),
-    );
-    return { privateKey: privateKeyBuffer.toString('hex'), address };
+  }> {
+    const pk = privateKey as string;
+    const signer = privateKeyToKMSSigner(pk);
+    const addr = await signer.getAddress();
+    return { privateKey: pk, address: addr };
   }
 
-  #handleSigningRequest(method: string, params: Json): Json {
+  async #handleSigningRequest(method: string, params: Json): Promise<Json> {
     switch (method) {
       case EthMethod.PersonalSign: {
         const [message, from] = params as [string, string];
-        return this.#signPersonalMessage(from, message);
+        return await this.#signPersonalMessage(from, message);
       }
 
       case EthMethod.SignTransaction: {
         const [tx] = params as [any];
-        return this.#signTransaction(tx);
+        return await this.#signTransaction(tx);
       }
 
       case EthMethod.SignTypedDataV1: {
         const [from, data] = params as [string, Json];
-        return this.#signTypedData(from, data, {
+        return await this.#signTypedData(from, data, {
           version: SignTypedDataVersion.V1,
         });
       }
 
       case EthMethod.SignTypedDataV3: {
         const [from, data] = params as [string, Json];
-        return this.#signTypedData(from, data, {
+        return await this.#signTypedData(from, data, {
           version: SignTypedDataVersion.V3,
         });
       }
 
       case EthMethod.SignTypedDataV4: {
         const [from, data] = params as [string, Json];
-        return this.#signTypedData(from, data, {
+        return await this.#signTypedData(from, data, {
           version: SignTypedDataVersion.V4,
         });
       }
 
       case EthMethod.Sign: {
         const [from, data] = params as [string, string];
-        return this.#signMessage(from, data);
+        return await this.#signMessage(from, data);
       }
 
       default: {
@@ -312,62 +296,59 @@ export class SimpleKeyring implements Keyring {
     }
   }
 
-  #signTransaction(tx: any): Json {
+  async #signTransaction(tx: any): Promise<Json> {
     // Patch the transaction to make sure that the `chainId` is a hex string.
     if (!tx.chainId.startsWith('0x')) {
       tx.chainId = `0x${parseInt(tx.chainId, 10).toString(16)}`;
     }
 
-    const wallet = this.#getWalletByAddress(tx.from);
-    const privateKey = Buffer.from(wallet.privateKey, 'hex');
-    const common = Common.custom(
-      { chainId: tx.chainId },
-      {
-        hardfork:
-          tx.maxPriorityFeePerGas || tx.maxFeePerGas
-            ? Hardfork.London
-            : Hardfork.Istanbul,
-      },
-    );
+    if (tx.type.startsWith('0x')) {
+      tx.type = parseInt(tx.type, 16);
+    }
 
-    const signedTx = TransactionFactory.fromTxData(tx, {
-      common,
-    }).sign(privateKey);
-
-    return serializeTransaction(signedTx.toJSON(), signedTx.type);
+    const { privateKey } = this.#getWalletByAddress(tx.from);
+    const signer = privateKeyToKMSSigner(privateKey);
+    const rawTransaction = await signer.signTransaction(tx);
+    const txSigned = (await signer.parseTransaction(rawTransaction)) as any;
+    txSigned.v = `0x${txSigned.v}`;
+    return txSigned;
   }
 
-  #signTypedData(
+  async #signTypedData(
     from: string,
     data: Json,
     opts: { version: SignTypedDataVersion } = {
       version: SignTypedDataVersion.V1,
     },
-  ): string {
+  ): Promise<string> {
     const { privateKey } = this.#getWalletByAddress(from);
-    const privateKeyBuffer = Buffer.from(privateKey, 'hex');
+    const signer = privateKeyToKMSSigner(privateKey);
 
-    return signTypedData({
-      privateKey: privateKeyBuffer,
-      data: data as unknown as TypedDataV1 | TypedMessage<any>,
-      version: opts.version,
-    });
+    let signature: string = '';
+    if ((data as unknown as TypedMessage<MessageTypes>).domain !== undefined) {
+      signature = await signer.signTypedDataV3V4(
+        opts.version as SignTypedDataVersion.V3 | SignTypedDataVersion.V4,
+        data as unknown as TypedMessage<MessageTypes>,
+      );
+    } else {
+      signature = await signer.signTypedDataV1(data as TypedDataV1Field[]);
+    }
+
+    return signature;
   }
 
-  #signPersonalMessage(from: string, request: string): string {
+  async #signPersonalMessage(from: string, data: string): Promise<string> {
     const { privateKey } = this.#getWalletByAddress(from);
-    const privateKeyBuffer = Buffer.from(privateKey, 'hex');
-    const messageBuffer = Buffer.from(request.slice(2), 'hex');
+    const signer = privateKeyToKMSSigner(privateKey);
 
-    const signature = personalSign({
-      privateKey: privateKeyBuffer,
-      data: messageBuffer,
-    });
+    const messageBuffer = Buffer.from(data.slice(2), 'hex');
+    const signature = await signer.signMessage(messageBuffer);
 
     const recoveredAddress = recoverPersonalSignature({
       data: messageBuffer,
       signature,
     });
+
     if (recoveredAddress !== from) {
       throw new Error(
         `Signature verification failed for account '${from}' (got '${recoveredAddress}')`,
@@ -377,12 +358,10 @@ export class SimpleKeyring implements Keyring {
     return signature;
   }
 
-  #signMessage(from: string, data: string): string {
+  async #signMessage(from: string, data: string): Promise<string> {
     const { privateKey } = this.#getWalletByAddress(from);
-    const privateKeyBuffer = Buffer.from(privateKey, 'hex');
-    const message = stripHexPrefix(data);
-    const signature = ecsign(Buffer.from(message, 'hex'), privateKeyBuffer);
-    return concatSig(toBuffer(signature.v), signature.r, signature.s);
+    const signer = privateKeyToKMSSigner(privateKey);
+    return await signer.signMessage(data);
   }
 
   async #saveState(): Promise<void> {
@@ -393,7 +372,7 @@ export class SimpleKeyring implements Keyring {
     event: KeyringEvent,
     data: Record<string, Json>,
   ): Promise<void> {
-    await emitSnapKeyringEvent(snap, event, data);
+    await emitSnapKeyringEvent(snap as unknown as any, event, data);
   }
 
   async toggleSyncApprovals(): Promise<void> {

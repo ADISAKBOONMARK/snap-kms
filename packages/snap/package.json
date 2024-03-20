@@ -1,22 +1,23 @@
 {
-  "name": "@metamask/snap-simple-keyring-snap",
-  "version": "1.1.1",
-  "description": "A simple keyring snap that integrates with MetaMask accounts.",
+  "name": "@adisakboonmark/snap-kms-signer",
+  "version": "1.0.0",
+  "description": "Snap KMS Signer is a feature that allows users to sign Ethereum transactions using an external key management service (KMS) provider.",
   "keywords": [
     "metamask",
     "snap",
     "keyring",
-    "account"
+    "account",
+    "kms"
   ],
-  "homepage": "https://github.com/MetaMask/snap-simple-keyring#readme",
+  "homepage": "https://github.com/ADISAKBOONMARK/snap-kms#readme",
   "bugs": {
-    "url": "https://github.com/MetaMask/snap-simple-keyring/issues"
+    "url": "https://github.com/ADISAKBOONMARK/snap-kms/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MetaMask/snap-simple-keyring.git"
+    "url": "git+https://github.com/ADISAKBOONMARK/snap-kms.git"
   },
-  "license": "(MIT-0 OR Apache-2.0)",
+  "license": "MIT",
   "main": "dist/bundle.js",
   "files": [
     "dist/",
@@ -34,16 +35,27 @@
     "lint:misc": "prettier '**/*.json' '**/*.md' '!CHANGELOG.md' '!snap.manifest.json' --check",
     "lint:types": "tsc --noEmit",
     "serve": "mm-snap serve",
-    "start": "NODE_ENV='development' mm-snap watch"
+    "start": "NODE_ENV='development' mm-snap watch",
+    "static-serve": "yarn build && yarn serve"
   },
   "dependencies": {
+    "@aws-sdk/client-kms": "^3.535.0",
     "@ethereumjs/common": "^3.1.2",
     "@ethereumjs/tx": "^4.1.2",
     "@ethereumjs/util": "^8.0.5",
+    "@ethersproject/abstract-signer": "^5.5.4",
+    "@ethersproject/bytes": "^5.7.0",
+    "@ethersproject/hash": "^5.5.4",
+    "@ethersproject/keccak256": "^5.5.4",
     "@metamask/eth-sig-util": "^7.0.1",
     "@metamask/keyring-api": "^1.0.0-rc.1",
     "@metamask/snaps-types": "^3.0.0",
     "@metamask/utils": "^8.1.0",
+    "@types/ethereum-protocol": "^1.0.1",
+    "asn1.js": "^5.4.1",
+    "bn.js": "^5.2.1",
+    "ethereumjs-util": "^7.1.5",
+    "ethers": "^5.5.4",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

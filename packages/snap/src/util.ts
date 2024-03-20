@@ -1,7 +1,9 @@
 import type { JsonTx } from '@ethereumjs/tx';
 import type { Json } from '@metamask/utils';
 
-import type { Wallet } from './keyring';
+import type { Wallet, AWSCredentials } from './keyring';
+import { KMSSigner } from './signer';
+import { KMSClient } from '@aws-sdk/client-kms';
 
 /**
  * Serializes a transaction by removing undefined properties and converting them to null.
@@ -76,4 +78,72 @@ export function runSensitive<Type>(
   } catch (error) {
     throw new Error(message ?? 'An unexpected error occurred');
   }
+}
+
+/**
+ * Convert the privateKey to AWS credentials.
+ *
+ * @param privateKey - The private key.
+ * @returns The AWS credentials.
+ */
+export function privateKeyToAWSCredentials(privateKey: string): AWSCredentials {
+  const pk = hexToString(privateKey).split('|');
+  if (pk.length !== 4) {
+    throw new Error('Invalid private key');
+  }
+  const aws: AWSCredentials = {
+    kmsKey: pk[0] as string,
+    awsRegion: pk[1] as string,
+    awsAccessKey: pk[2] as string,
+    awsSecretAccessKey: pk[3] as string,
+  };
+  return aws;
+}
+
+/**
+ * Create KMS signer from the privateKey.
+ *
+ * @param privateKey - The private key.
+ * @returns The KMS signer.
+ */
+export function privateKeyToKMSSigner(privateKey: string): KMSSigner {
+  const credentials = privateKeyToAWSCredentials(privateKey);
+  const signer = new KMSSigner(
+    credentials.kmsKey,
+    new KMSClient({
+      region: credentials.awsRegion,
+      credentials: {
+        accessKeyId: credentials.awsAccessKey,
+        secretAccessKey: credentials.awsSecretAccessKey,
+      },
+    }),
+  );
+  return signer;
+}
+
+/**
+ * Convert the string to hex.
+ *
+ * @param str - The target string that want to convert.
+ * @returns The hex of input.
+ */
+export function stringToHex(str: string) {
+  var hex = '';
+  for (var i = 0, l = str.length; i < l; i++) {
+    hex += str.charCodeAt(i).toString(16);
+  }
+  return hex;
+}
+
+/**
+ * Convert the hex to string.
+ *
+ * @param hex - The target hex that want to convert.
+ * @returns The string of input.
+ */
+export function hexToString(hex: string) {
+  var str = '';
+  for (var i = 0; i < hex.length; i += 2)
+    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+  return str;
 }

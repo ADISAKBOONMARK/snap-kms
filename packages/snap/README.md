@@ -1,11 +1,7 @@
-# Simple Keyring Snap
+# Snap KMS Signer
 
-This repository contains a simple example of a keyring snap.
+Snap KMS Signer is a feature that allows users to sign Ethereum transactions using an external key management service (KMS) provider. This feature enhances the security of the signing process by keeping the private keys used for signing transactions secure and isolated from the browser and the MetaMask extension.
 
-Keyring snaps enable developers to enhance MetaMask by adding new account
-types. These accounts are natively supported within the extension, appearing in
-MetaMask's UI, and can be used with dapps.
+When a user initiates a transaction in MetaMask, instead of signing the transaction using the locally stored private key, MetaMask communicates with the external KMS provider to perform the signing operation. This allows the private key to remain safely stored within the KMS, reducing the risk of exposure to malicious actors.
 
-MetaMask Snaps is a system that allows anyone to safely expand the capabilities
-of MetaMask. A _snap_ is a program that we run in an isolated environment that
-can customize the wallet experience.
+The integration of a KMS with MetaMask provides users with a more secure way to interact with decentralized applications (dApps) and the Ethereum blockchain, ensuring that their transactions are signed in a secure environment.

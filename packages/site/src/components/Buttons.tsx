@@ -74,18 +74,22 @@ const ConnectedIndicator = styled.div`
 type ActionButtonProps = {
   width?: string;
   margin?: string;
+  color?: {
+    hover?: string;
+    background?: string;
+  };
 };
 
 const ActionButton = styled.button<ActionButtonProps>`
   width: ${(props) => props.width};
-  background-color: #0376c9;
+  background-color: ${(props) => props?.color?.background || "#0376c9"};
   border-radius: 999px;
   border: none;
   padding: 5px 20px;
   margin: ${(props) => props.margin};
 
   &:hover {
-    background-color: #0376ff;
+    background-color: ${(props) => props?.color?.hover || "#0376ff"};
     border: none;
     color: #fff;
   }
@@ -174,6 +178,7 @@ export const MethodButton = (props: any) => {
       onClick={props.onClick}
       width={props.width}
       margin={props.margin}
+      color={props.color}
     >
       {props.label}
     </ActionButton>
