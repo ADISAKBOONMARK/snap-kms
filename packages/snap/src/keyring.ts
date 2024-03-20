@@ -30,6 +30,7 @@ import {
   throwError,
   privateKeyToKMSSigner,
 } from './util';
+import packageInfo from '../package.json';
 
 export type KeyringState = {
   wallets: Record<string, Wallet>;
@@ -196,7 +197,12 @@ export class SimpleKeyring implements Keyring {
       process.env.NODE_ENV === 'production'
         ? process.env.DAPP_ORIGIN_PRODUCTION
         : process.env.DAPP_ORIGIN_DEVELOPMENT;
+    const dappVersion: string = packageInfo.version;
 
+    // Ensuring that both dappUrlPrefix and dappVersion are truthy
+    if (dappUrlPrefix && dappVersion && process.env.NODE_ENV === 'production') {
+      return `${dappUrlPrefix}${dappVersion}/`;
+    }
     // Default URL if dappUrlPrefix or dappVersion are falsy, or if URL construction fails
     return dappUrlPrefix as string;
   }
@@ -206,7 +212,9 @@ export class SimpleKeyring implements Keyring {
   ): Promise<SubmitRequestResponse> {
     this.#state.pendingRequests[request.id] = request;
     await this.#saveState();
-    const dappUrl = this.#getCurrentUrl();
+    let dappUrl = this.#getCurrentUrl();
+    const dappVersion: string = packageInfo.version;
+    dappUrl = dappUrl.replace(`${dappVersion}/`, '');
     return {
       pending: true,
       redirect: {
