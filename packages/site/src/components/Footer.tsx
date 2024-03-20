@@ -6,7 +6,7 @@ import { PoweredBy } from './PoweredBy';
 import { ReactComponent as MetaMaskFox } from '../assets/metamask_fox.svg';
 import packageInfo from '../../package.json';
 import { defaultSnapOrigin } from '../config';
-import snapPackageInfo from '../../package.json';
+import snapPackageInfo from '../../../snap/package.json';
 import { MetaMaskContext } from '../hooks';
 
 const FooterWrapper = styled.footer`
